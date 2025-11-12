@@ -1,5 +1,5 @@
 import { FileTreeNode } from '../types';
-import { File, Folder, FolderOpen } from 'lucide-react';
+import { File, Folder, FolderOpen, FileCode, FileText, FileJson, FileImage } from 'lucide-react';
 import { useState } from 'react';
 
 interface FileTreeProps {
@@ -13,9 +13,41 @@ interface TreeNodeProps {
   onFileSelect?: (file: FileTreeNode) => void;
 }
 
+function getFileIcon(filename: string) {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'js':
+    case 'ts':
+    case 'jsx':
+    case 'tsx':
+    case 'py':
+    case 'java':
+    case 'cpp':
+    case 'c':
+      return FileCode;
+    case 'json':
+    case 'xml':
+      return FileJson;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'svg':
+      return FileImage;
+    case 'txt':
+    case 'md':
+    case 'readme':
+      return FileText;
+    default:
+      return File;
+  }
+}
+
 function TreeNode({ node, level, onFileSelect }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
+  const FileIcon = node.type === 'file' ? getFileIcon(node.name) : null;
 
   const handleClick = () => {
     if (node.type === 'directory') {
@@ -25,26 +57,72 @@ function TreeNode({ node, level, onFileSelect }: TreeNodeProps) {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <div>
       <div
-        className="flex items-center gap-2 py-1 px-2 hover:bg-gray-700 rounded cursor-pointer"
+        className={`
+          flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer
+          transition-all duration-150
+          ${isHovered ? 'bg-gray-700/70 scale-102' : 'bg-transparent'}
+          hover:bg-gray-700/70 hover:scale-102
+          ${node.type === 'directory' ? 'font-medium' : ''}
+        `}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={handleClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`${node.type === 'directory' ? 'Folder' : 'File'}: ${node.name}`}
+        aria-expanded={node.type === 'directory' ? isExpanded : undefined}
       >
         {node.type === 'directory' ? (
-          isExpanded ? (
-            <FolderOpen size={16} className="text-yellow-400" />
-          ) : (
-            <Folder size={16} className="text-yellow-400" />
-          )
+          <div className="flex items-center transition-transform duration-200">
+            {isExpanded ? (
+              <FolderOpen 
+                size={18} 
+                className="text-yellow-400 drop-shadow-lg" 
+              />
+            ) : (
+              <Folder 
+                size={18} 
+                className="text-yellow-400 drop-shadow-lg" 
+              />
+            )}
+          </div>
         ) : (
-          <File size={16} className="text-blue-400" />
+          FileIcon && (
+            <FileIcon 
+              size={16} 
+              className="text-blue-400 drop-shadow-lg" 
+            />
+          )
         )}
-        <span className="text-gray-200 text-sm">{node.name}</span>
+        <span className={`
+          text-sm transition-colors duration-150
+          ${isHovered ? 'text-white' : 'text-gray-200'}
+        `}>
+          {node.name}
+        </span>
+        
+        {/* File size indicator for files */}
+        {node.type === 'file' && node.content && (
+          <span className="ml-auto text-xs text-gray-500 font-mono">
+            {node.content.length}b
+          </span>
+        )}
       </div>
+      
       {hasChildren && isExpanded && (
-        <div>
+        <div className="ml-2 border-l-2 border-gray-700/50">
           {node.children!.map((child, index) => (
             <TreeNode
               key={index}
@@ -60,21 +138,38 @@ function TreeNode({ node, level, onFileSelect }: TreeNodeProps) {
 }
 
 export function FileTree({ tree, onFileSelect }: FileTreeProps) {
+  const fileCount = tree.children?.length || 0;
+
   return (
-    <div className="bg-gray-900 rounded-lg p-4">
-      <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-        <span className="text-2xl">📁</span>
-        Files
-      </h3>
+    <div className="bg-gray-900 rounded-xl p-6 border border-gray-700 shadow-xl">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-white font-bold flex items-center gap-2">
+          <span className="text-2xl">📁</span>
+          Working Directory
+        </h3>
+        {fileCount > 0 && (
+          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full font-medium">
+            {fileCount} {fileCount === 1 ? 'item' : 'items'}
+          </span>
+        )}
+      </div>
+      
       {tree.children && tree.children.length > 0 ? (
-        <div>
+        <div className="space-y-1">
           {tree.children.map((child, index) => (
-            <TreeNode key={index} node={child} level={0} onFileSelect={onFileSelect} />
+            <TreeNode 
+              key={index} 
+              node={child} 
+              level={0} 
+              onFileSelect={onFileSelect} 
+            />
           ))}
         </div>
       ) : (
-        <div className="text-gray-400 text-center py-8">
-          No files yet
+        <div className="text-gray-400 text-center py-12">
+          <div className="text-5xl mb-3">📂</div>
+          <p className="text-sm">No files yet</p>
+          <p className="text-xs mt-1 text-gray-500">Create files to see them here</p>
         </div>
       )}
     </div>

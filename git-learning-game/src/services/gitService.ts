@@ -11,49 +11,108 @@ class GitService {
     this.fs = new LightningFS.default('git-learning-game');
     this.dir = '/repo';
     this.pfs = this.fs.promises;
+    
+    // Ensure root directory exists
+    this.pfs.mkdir('/').catch(() => {
+      // Root might already exist, ignore
+    });
   }
 
   async init(): Promise<void> {
     try {
-      await this.pfs.mkdir(this.dir);
+      // Ensure root exists first
+      try {
+        await this.pfs.stat('/');
+      } catch (e) {
+        await this.pfs.mkdir('/');
+      }
+      
+      // Create repo directory
+      try {
+        await this.pfs.mkdir(this.dir);
+      } catch (e) {
+        // Directory might already exist, that's okay
+      }
     } catch (e) {
-      // Directory might already exist
+      console.error('Error creating directories:', e);
     }
     
-    await git.init({
-      fs: this.fs,
-      dir: this.dir,
-      defaultBranch: 'main',
-    });
+    try {
+      await git.init({
+        fs: this.fs,
+        dir: this.dir,
+        defaultBranch: 'main',
+      });
 
-    // Configure git
-    await git.setConfig({
-      fs: this.fs,
-      dir: this.dir,
-      path: 'user.name',
-      value: 'Git Learner',
-    });
+      // Configure git
+      await git.setConfig({
+        fs: this.fs,
+        dir: this.dir,
+        path: 'user.name',
+        value: 'Git Learner',
+      });
 
-    await git.setConfig({
-      fs: this.fs,
-      dir: this.dir,
-      path: 'user.email',
-      value: 'learner@ohmygit.org',
-    });
+      await git.setConfig({
+        fs: this.fs,
+        dir: this.dir,
+        path: 'user.email',
+        value: 'learner@ohmygit.org',
+      });
+    } catch (e) {
+      console.error('Error initializing git:', e);
+      throw e;
+    }
   }
 
   async reset(): Promise<void> {
-    // Clear the file system
     try {
+      // First, ensure the repo exists
+      try {
+        await this.pfs.stat(this.dir);
+      } catch (e) {
+        // Directory doesn't exist, create it
+        await this.pfs.mkdir(this.dir);
+        await this.init();
+        return;
+      }
+
+      // Directory exists, clean up files (but keep .git)
       const files = await this.pfs.readdir(this.dir);
       for (const file of files) {
         if (file !== '.git') {
-          await this.removeRecursive(`${this.dir}/${file}`);
+          try {
+            await this.removeRecursive(`${this.dir}/${file}`);
+          } catch (e) {
+            // Ignore errors removing individual files
+          }
         }
       }
-      
-      // Reinitialize
-      await this.init();
+
+      // Check if .git exists, if not, reinitialize
+      try {
+        await this.pfs.stat(`${this.dir}/.git`);
+      } catch (e) {
+        // .git doesn't exist, initialize
+        await git.init({
+          fs: this.fs,
+          dir: this.dir,
+          defaultBranch: 'main',
+        });
+
+        await git.setConfig({
+          fs: this.fs,
+          dir: this.dir,
+          path: 'user.name',
+          value: 'Git Learner',
+        });
+
+        await git.setConfig({
+          fs: this.fs,
+          dir: this.dir,
+          path: 'user.email',
+          value: 'learner@ohmygit.org',
+        });
+      }
     } catch (e) {
       console.error('Error resetting:', e);
     }
@@ -361,5 +420,12 @@ class GitService {
   }
 }
 
-export default new GitService();
+const gitServiceInstance = new GitService();
+
+// Initialize on creation
+gitServiceInstance.init().catch(err => {
+  console.error('Failed to initialize git service:', err);
+});
+
+export default gitServiceInstance;
 

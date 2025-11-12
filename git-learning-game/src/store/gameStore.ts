@@ -32,9 +32,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   terminalOutput: [],
   isLevelComplete: false,
 
-  setCurrentLevel: (level: number) => {
+  setCurrentLevel: async (level: number) => {
     set({ currentLevel: level, isLevelComplete: false });
-    get().initLevel(levels[level]);
+    await get().initLevel(levels[level]);
   },
 
   completeLevel: () => {
@@ -81,8 +81,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   initLevel: async (level: Level) => {
     try {
-      // Reset git
-      await gitService.reset();
+      console.log('Initializing level:', level.title);
+      
+      // Reset git with retry logic
+      let resetSuccess = false;
+      for (let i = 0; i < 3 && !resetSuccess; i++) {
+        try {
+          await gitService.reset();
+          resetSuccess = true;
+        } catch (error) {
+          console.log(`Reset attempt ${i + 1} failed, retrying...`);
+          if (i === 2) throw error;
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
 
       // Execute setup commands
       for (const command of level.setup) {
@@ -100,8 +112,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       // Refresh the state
       await get().refresh();
+      console.log('Level initialized successfully');
     } catch (error) {
       console.error('Error initializing level:', error);
+      // Set empty state to avoid crashes
+      set({
+        commits: [],
+        refs: [],
+        fileTree: { name: 'repo', path: '', type: 'directory', children: [] }
+      });
     }
   },
 
