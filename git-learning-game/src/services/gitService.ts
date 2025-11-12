@@ -1,6 +1,8 @@
 import git from 'isomorphic-git';
-import * as LightningFS from '@isomorphic-git/lightning-fs';
+import LightningFS from '@isomorphic-git/lightning-fs';
 import { GitCommit, GitRef, FileTreeNode } from '../types';
+
+type StatusEntry = [string, number, number, number];
 
 class GitService {
   private fs: any;
@@ -8,7 +10,7 @@ class GitService {
   private pfs: any;
 
   constructor() {
-    this.fs = new LightningFS.default('git-learning-game');
+    this.fs = new LightningFS('git-learning-game');
     this.dir = '/repo';
     this.pfs = this.fs.promises;
     
@@ -64,28 +66,29 @@ class GitService {
     }
   }
 
-  async reset(): Promise<void> {
+  private async ensureRepoDir(): Promise<boolean> {
     try {
-      // First, ensure the repo exists
-      try {
-        await this.pfs.stat(this.dir);
-      } catch (e) {
-        // Directory doesn't exist, create it
-        await this.pfs.mkdir(this.dir);
-        await this.init();
-        return;
-      }
+      await this.pfs.stat(this.dir);
+      return true;
+    } catch {
+      await this.pfs.mkdir(this.dir);
+      return false;
+    }
+  }
 
-      // Directory exists, clean up files (but keep .git)
-      const files = await this.pfs.readdir(this.dir);
-      for (const file of files) {
-        if (file !== '.git') {
-          try {
+  async reset(): Promise<void> {
+    const existed = await this.ensureRepoDir();
+
+    if (existed) {
+      try {
+        const files = await this.pfs.readdir(this.dir);
+        for (const file of files) {
+          if (file !== '.git') {
             await this.removeRecursive(`${this.dir}/${file}`);
-          } catch (e) {
-            // Ignore errors removing individual files
           }
         }
+      } catch (e) {
+        console.warn('Reset skipped clearing repository contents:', e);
       }
 
       // Check if .git exists, if not, reinitialize
@@ -113,9 +116,10 @@ class GitService {
           value: 'learner@ohmygit.org',
         });
       }
-    } catch (e) {
-      console.error('Error resetting:', e);
     }
+
+    // Reinitialize regardless
+    await this.init();
   }
 
   private async removeRecursive(path: string): Promise<void> {
@@ -321,7 +325,7 @@ class GitService {
     }
   }
 
-  async status(): Promise<any> {
+  async status(): Promise<StatusEntry[]> {
     return await git.statusMatrix({
       fs: this.fs,
       dir: this.dir,
@@ -378,7 +382,7 @@ class GitService {
           
         case 'status':
           const status = await this.status();
-          const staged = status.filter(([, head, workdir, stage]) => stage !== head);
+          const staged = status.filter(([, head, , stage]) => stage !== head);
           const modified = status.filter(([, head, workdir]) => workdir !== head && workdir !== 0);
           const untracked = status.filter(([, head, workdir]) => head === 0 && workdir !== 0);
           
@@ -386,19 +390,25 @@ class GitService {
           
           if (staged.length > 0) {
             result += 'Changes to be committed:\n';
-            staged.forEach(([file]) => result += `\t${file}\n`);
+            staged.forEach(([file]) => {
+              result += `\t${file}\n`;
+            });
             result += '\n';
           }
           
           if (modified.length > 0) {
             result += 'Changes not staged for commit:\n';
-            modified.forEach(([file]) => result += `\t${file}\n`);
+            modified.forEach(([file]) => {
+              result += `\t${file}\n`;
+            });
             result += '\n';
           }
           
           if (untracked.length > 0) {
             result += 'Untracked files:\n';
-            untracked.forEach(([file]) => result += `\t${file}\n`);
+            untracked.forEach(([file]) => {
+              result += `\t${file}\n`;
+            });
           }
           
           return result || 'nothing to commit, working tree clean';
@@ -428,4 +438,3 @@ gitServiceInstance.init().catch(err => {
 });
 
 export default gitServiceInstance;
-
