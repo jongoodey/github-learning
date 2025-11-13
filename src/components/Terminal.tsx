@@ -10,11 +10,14 @@ interface TerminalLine {
   content: string;
 }
 
+// Initial terminal state - what the terminal looks like when cleared
+const INITIAL_LINES: TerminalLine[] = [
+  { type: 'output', content: 'Welcome to Git Learning Game Terminal!' },
+  { type: 'output', content: 'Type git commands here. Try "git status" to begin.\n' },
+];
+
 export function Terminal({ onCommand }: TerminalProps) {
-  const [lines, setLines] = useState<TerminalLine[]>([
-    { type: 'output', content: 'Welcome to Git Learning Game Terminal!' },
-    { type: 'output', content: 'Type git commands here. Try "git status" to begin.\n' },
-  ]);
+  const [lines, setLines] = useState<TerminalLine[]>(INITIAL_LINES);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -30,6 +33,20 @@ export function Terminal({ onCommand }: TerminalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
+
+    const trimmedInput = input.trim();
+
+    // Handle built-in terminal commands first (before adding to lines)
+    if (trimmedInput === 'clear' || trimmedInput === 'cls') {
+      // Add the command to history but don't show it in output
+      setHistory(prev => [...prev, trimmedInput]);
+      setHistoryIndex(-1);
+      setInput('');
+      
+      // Clear terminal by resetting to initial state
+      setLines(INITIAL_LINES);
+      return;
+    }
 
     // Add input to lines
     setLines(prev => [...prev, { type: 'input', content: `$ ${input}` }]);
