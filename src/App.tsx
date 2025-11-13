@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { GitGraph } from './components/GitGraph';
-import { GitGraphP5 } from './components/GitGraphP5';
+// import { GitGraphP5 } from './components/GitGraphP5'; // Temporarily disabled due to dependency issues
 import { FileTree } from './components/FileTree';
 import { Terminal } from './components/Terminal';
 import { CommandCard } from './components/CommandCard';
@@ -23,7 +23,8 @@ function App() {
   } = useGameStore();
 
   const [showInfo, setShowInfo] = useState(true);
-  const [useP5Visualization, setUseP5Visualization] = useState(true);
+  const [useP5Visualization, setUseP5Visualization] = useState(false); // Set to false (D3) by default
+  const [terminalAutofill, setTerminalAutofill] = useState('');
 
   const level = levels[currentLevel];
 
@@ -31,7 +32,7 @@ function App() {
     setCurrentLevel(0);
   }, [setCurrentLevel]);
 
-  const handleCardClick = async (command: string) => {
+  const handleCardClick = (command: string) => {
     let cmd = '';
     switch (command) {
       case 'commit':
@@ -51,12 +52,15 @@ function App() {
       case 'checkout':
         cmd = 'git checkout new-branch';
         break;
+      case 'merge':
+        cmd = 'git merge ';
+        break;
       default:
         cmd = `git ${command}`;
     }
     
     if (cmd) {
-      await executeCommand(cmd);
+      setTerminalAutofill(cmd);
     }
   };
 
@@ -87,9 +91,10 @@ function App() {
               </button>
               <button
                 onClick={nextLevel}
-                disabled={currentLevel === levels.length - 1}
+                disabled={currentLevel === levels.length - 1 || !isLevelComplete}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-800 disabled:opacity-50 
                          text-white rounded-lg flex items-center gap-2 transition-colors"
+                title={!isLevelComplete ? "Complete this level first!" : ""}
               >
                 Next
                 <ChevronRight size={20} />
@@ -142,7 +147,8 @@ function App() {
           {/* Left Column - Visualization */}
           <div className="xl:col-span-2 space-y-6">
             <div className="relative">
-              <button
+              {/* Temporarily disabled toggle button due to P5 dependency issues */}
+              {/* <button
                 onClick={() => setUseP5Visualization(!useP5Visualization)}
                 className="absolute top-4 right-4 z-10 px-3 py-1 bg-purple-600 hover:bg-purple-700
                          text-white rounded-lg flex items-center gap-2 text-sm transition-colors shadow-lg"
@@ -150,13 +156,9 @@ function App() {
               >
                 <Sparkles size={14} />
                 {useP5Visualization ? 'D3 Mode' : 'Interactive Mode'}
-              </button>
+              </button> */}
 
-              {useP5Visualization ? (
-                <GitGraphP5 commits={commits} refs={refs} />
-              ) : (
-                <GitGraph commits={commits} refs={refs} />
-              )}
+              <GitGraph commits={commits} refs={refs} />
             </div>
             
             {/* Command Cards */}
@@ -179,7 +181,11 @@ function App() {
               </div>
             )}
 
-            <Terminal onCommand={executeCommand} />
+            <Terminal 
+              onCommand={executeCommand} 
+              autofillCommand={terminalAutofill}
+              onAutofillUsed={() => setTerminalAutofill('')}
+            />
           </div>
 
           {/* Right Column - File Tree */}

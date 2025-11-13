@@ -19,7 +19,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@p5-wrapper/react'],
+    include: ['react', 'react-dom'], // Removed '@p5-wrapper/react' due to dependency issues
     esbuildOptions: {
       define: {
         global: 'globalThis',
