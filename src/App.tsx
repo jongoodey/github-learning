@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { GitGraph } from './components/GitGraph';
+import { GitGraphP5 } from './components/GitGraphP5';
 import { FileTree } from './components/FileTree';
 import { Terminal } from './components/Terminal';
 import { CommandCard } from './components/CommandCard';
 import { useGameStore } from './store/gameStore';
 import { levels } from './data/levels';
-import { ChevronLeft, ChevronRight, Trophy, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy, Info, Sparkles } from 'lucide-react';
 
 function App() {
   const {
@@ -22,6 +23,7 @@ function App() {
   } = useGameStore();
 
   const [showInfo, setShowInfo] = useState(true);
+  const [useP5Visualization, setUseP5Visualization] = useState(true);
 
   const level = levels[currentLevel];
 
@@ -139,7 +141,23 @@ function App() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Left Column - Visualization */}
           <div className="xl:col-span-2 space-y-6">
-            <GitGraph commits={commits} refs={refs} />
+            <div className="relative">
+              <button
+                onClick={() => setUseP5Visualization(!useP5Visualization)}
+                className="absolute top-4 right-4 z-10 px-3 py-1 bg-purple-600 hover:bg-purple-700
+                         text-white rounded-lg flex items-center gap-2 text-sm transition-colors shadow-lg"
+                title={useP5Visualization ? "Switch to D3 visualization" : "Switch to interactive p5.js visualization"}
+              >
+                <Sparkles size={14} />
+                {useP5Visualization ? 'D3 Mode' : 'Interactive Mode'}
+              </button>
+
+              {useP5Visualization ? (
+                <GitGraphP5 commits={commits} refs={refs} />
+              ) : (
+                <GitGraph commits={commits} refs={refs} />
+              )}
+            </div>
             
             {/* Command Cards */}
             {level.cards && level.cards.length > 0 && (

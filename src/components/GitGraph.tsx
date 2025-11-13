@@ -151,7 +151,7 @@ export function GitGraph({ commits, refs }: GitGraphProps) {
       .data(d => d.refs)
       .join('g')
       .attr('class', 'ref-label')
-      .attr('transform', (d, i) => `translate(${commitRadius + 8}, ${-18 - i * 20})`)
+      .attr('transform', (_d, i) => `translate(${commitRadius + 8}, ${-18 - i * 20})`)
       .each(function (ref) {
         const group = d3.select(this);
         

@@ -82,7 +82,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   initLevel: async (level: Level) => {
     try {
       // Reset git
-      await gitService.reset();
+      await gitService.resetRepo();
 
       // Execute setup commands
       for (const command of level.setup) {
