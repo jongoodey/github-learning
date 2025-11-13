@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
-    "@p5-wrapper/react": "^4.4.2",
+    "@p5-wrapper/react": "^5.0.0-rc.5",
     "d3": "^7.9.0",
     "isomorphic-git": "^1.35.0",
     "lucide-react": "^0.553.0",

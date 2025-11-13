@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ReactP5Wrapper, Sketch } from '@p5-wrapper/react';
+import { P5Canvas, Sketch, P5CanvasInstance } from '@p5-wrapper/react';
 import { GitCommit, GitRef } from '../types';
 
 interface GitGraphP5Props {
@@ -29,7 +29,8 @@ export function GitGraphP5({ commits, refs }: GitGraphP5Props) {
     refsRef.current = refs;
   }, [commits, refs]);
 
-  const sketch: Sketch = (p5) => {
+  const sketch: Sketch<{ commits: GitCommit[]; refs: GitRef[] }> = (p5Instance: P5CanvasInstance<{ commits: GitCommit[]; refs: GitRef[] }>) => {
+    const p5 = p5Instance;
     let nodes: CommitNode[] = [];
     let links: { source: CommitNode; target: CommitNode }[] = [];
     let canvasHeight = 400;
@@ -275,7 +276,7 @@ export function GitGraphP5({ commits, refs }: GitGraphP5Props) {
         <span className="text-xs text-gray-400 font-normal ml-2">(Drag commits to explore!)</span>
       </h3>
       <div id="git-graph-container" className="w-full">
-        <ReactP5Wrapper sketch={sketch} commits={commits} refs={refs} />
+        <P5Canvas sketch={sketch} commits={commits} refs={refs} />
       </div>
     </div>
   );
