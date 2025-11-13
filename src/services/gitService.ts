@@ -588,10 +588,20 @@ In real GitHub, you'd use: gh pr create --title "${title}"
 
   async executeCommand(command: string): Promise<string> {
     const parts = command.trim().split(/\s+/);
-    const gitCommand = parts[0] === 'git' ? parts[1] : parts[0];
+    const gitCommand = parts[0] === 'git' ? (parts[1] || '') : parts[0];
     const args = parts[0] === 'git' ? parts.slice(2) : parts.slice(1);
 
     console.log('Executing:', gitCommand, args);
+
+    // Handle empty git command
+    if (parts[0] === 'git' && !gitCommand) {
+      return 'usage: git <command> [<args>]\n\nType "help" for available commands.';
+    }
+
+    // Handle empty command
+    if (!gitCommand) {
+      return 'Type "help" for available commands.';
+    }
 
     try {
       switch (gitCommand) {
@@ -821,7 +831,7 @@ In real GitHub, you'd use: gh pr create --title "${title}"
           return this.getHelpText();
 
         default:
-          return `Command not found: ${gitCommand}\nType 'help' for available commands.`;
+          return `Command not found: ${gitCommand || 'undefined'}\nType 'help' for available commands.`;
       }
     } catch (error: any) {
       return `Error: ${error.message}`;
