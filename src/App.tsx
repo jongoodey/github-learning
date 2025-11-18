@@ -55,6 +55,21 @@ function App() {
       case 'merge':
         cmd = 'git merge ';
         break;
+      case 'status':
+        cmd = 'git status';
+        break;
+      case 'log':
+        cmd = 'git log';
+        break;
+      case 'push':
+        cmd = 'git push origin main';
+        break;
+      case 'stash':
+        cmd = 'git stash';
+        break;
+      case 'remote':
+        cmd = 'git remote';
+        break;
       default:
         cmd = `git ${command}`;
     }
@@ -164,11 +179,14 @@ function App() {
             {/* Command Cards */}
             {level.cards && level.cards.length > 0 && (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <h3 className="text-white font-bold mb-2 flex items-center gap-2">
                   <span className="text-2xl">🎴</span>
                   Available Commands
                 </h3>
-                <div className="flex flex-wrap gap-4">
+                <p className="text-gray-400 text-sm mb-4">
+                  Click on these command cards to add them to the interactive terminal below. You can then modify or execute them as needed.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                   {level.cards.map(card => (
                     <CommandCard
                       key={card}

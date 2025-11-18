@@ -38,7 +38,7 @@ class GitService {
 
   async init(): Promise<void> {
     try {
-      await this.pfs.mkdir(this.dir);
+      await this.mkdirRecursive(this.dir);
     } catch (e) {
       // Directory might already exist
     }
@@ -68,10 +68,19 @@ class GitService {
   async resetRepo(): Promise<void> {
     // Clear the file system
     try {
-      const files = await this.pfs.readdir(this.dir);
-      for (const file of files) {
-        if (file !== '.git') {
-          await this.removeRecursive(`${this.dir}/${file}`);
+      // Check if directory exists before trying to read it
+      try {
+        await this.pfs.stat(this.dir);
+        const files = await this.pfs.readdir(this.dir);
+        for (const file of files) {
+          if (file !== '.git') {
+            await this.removeRecursive(`${this.dir}/${file}`);
+          }
+        }
+      } catch (e: any) {
+        // Directory doesn't exist, that's fine - we'll create it in init()
+        if (e.code !== 'ENOENT') {
+          throw e;
         }
       }
 
@@ -79,6 +88,12 @@ class GitService {
       await this.init();
     } catch (e) {
       console.error('Error resetting:', e);
+      // Even if reset fails, try to initialize
+      try {
+        await this.init();
+      } catch (initError) {
+        console.error('Error initializing after reset:', initError);
+      }
     }
   }
 
