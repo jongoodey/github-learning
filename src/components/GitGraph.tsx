@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { GitCommit, GitRef } from '../types';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface GitGraphProps {
   commits: GitCommit[];
@@ -23,6 +24,27 @@ interface GraphLink {
 
 export function GitGraph({ commits, refs }: GitGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Check on initial render - collapse by default on mobile
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024; // Expanded on desktop, collapsed on mobile
+    }
+    return true;
+  });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!svgRef.current || commits.length === 0) return;
@@ -180,18 +202,41 @@ export function GitGraph({ commits, refs }: GitGraphProps) {
   }, [commits, refs]);
 
   return (
-    <div className="bg-gray-900 rounded-lg p-4 overflow-auto">
-      <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-        <span className="text-2xl">🌳</span>
-        Git Graph
-      </h3>
-      {commits.length === 0 ? (
-        <div className="text-gray-400 text-center py-12">
-          No commits yet. Make your first commit to see the graph!
-        </div>
-      ) : (
-        <svg ref={svgRef} className="w-full" />
-      )}
+    <div className="bg-gray-900 rounded-lg p-4 overflow-hidden">
+      <div 
+        className="flex items-center justify-between cursor-pointer select-none"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <h3 className="text-white font-bold flex items-center gap-2">
+          <span className="text-2xl">🌳</span>
+          Git Graph
+        </h3>
+        {isMobile && (
+          <button
+            className="text-gray-400 hover:text-white transition-colors p-1"
+            aria-label={isExpanded ? 'Collapse graph' : 'Expand graph'}
+          >
+            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
+        )}
+      </div>
+      <div 
+        className={`transition-all duration-300 ease-in-out ${
+          isMobile && !isExpanded ? 'max-h-0 overflow-hidden' : 'max-h-[600px] overflow-auto'
+        }`}
+        style={{ 
+          touchAction: 'pan-y', // Prevent zoom gestures, allow vertical scroll
+          WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+        }}
+      >
+        {commits.length === 0 ? (
+          <div className="text-gray-400 text-center py-12">
+            No commits yet. Make your first commit to see the graph!
+          </div>
+        ) : (
+          <svg ref={svgRef} className="w-full" style={{ minHeight: '200px' }} />
+        )}
+      </div>
     </div>
   );
 }
