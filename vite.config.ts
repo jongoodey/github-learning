@@ -6,6 +6,11 @@ import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfil
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5175,
+    strictPort: false, // Try next port if 5175 is in use
+    host: true,
+  },
   define: {
     global: 'globalThis',
   },
