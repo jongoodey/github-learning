@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { GitGraph } from './components/GitGraph';
 // import { GitGraphP5 } from './components/GitGraphP5'; // Temporarily disabled due to dependency issues
 import { FileTree } from './components/FileTree';
@@ -6,7 +6,7 @@ import { Terminal } from './components/Terminal';
 import { CommandCard } from './components/CommandCard';
 import { useGameStore } from './store/gameStore';
 import { levels } from './data/levels';
-import { ChevronLeft, ChevronRight, Trophy, Info, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy, Info } from 'lucide-react';
 
 function App() {
   const {
@@ -23,7 +23,6 @@ function App() {
   } = useGameStore();
 
   const [showInfo, setShowInfo] = useState(true);
-  const [useP5Visualization, setUseP5Visualization] = useState(false); // Set to false (D3) by default
   const [terminalAutofill, setTerminalAutofill] = useState('');
 
   const level = levels[currentLevel];
@@ -83,7 +82,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-6">
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
-        <header className="mb-6">
+        <header className="mb-6 relative z-50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <h1 className="text-4xl font-bold text-white flex items-center gap-3">

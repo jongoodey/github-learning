@@ -38,7 +38,6 @@ export function Terminal({ onCommand, autofillCommand, onAutofillUsed }: Termina
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
   const [lastHistoryInput, setLastHistoryInput] = useState(''); // Store input from history for comparison
-  const [shouldSelectAll, setShouldSelectAll] = useState(false); // Flag to select all text after history navigation
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
 
@@ -47,14 +46,6 @@ export function Terminal({ onCommand, autofillCommand, onAutofillUsed }: Termina
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
   }, [lines]);
-
-  // Select all text when shouldSelectAll is true (after history navigation)
-  useEffect(() => {
-    if (shouldSelectAll && inputRef.current) {
-      inputRef.current.select();
-      setShouldSelectAll(false);
-    }
-  }, [shouldSelectAll, input]);
 
   // Handle autofill from command cards
   useEffect(() => {
@@ -162,7 +153,7 @@ export function Terminal({ onCommand, autofillCommand, onAutofillUsed }: Termina
         // Directly set the new input value - React will handle the update
         setInput(historyInput);
         setLastHistoryInput(historyInput);
-        setShouldSelectAll(true);
+        // Standard terminal behavior: cursor at end (React does this by default when value changes)
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -177,7 +168,6 @@ export function Terminal({ onCommand, autofillCommand, onAutofillUsed }: Termina
         // Directly set the new input value - React will handle the update
         setInput(historyInput);
         setLastHistoryInput(historyInput);
-        setShouldSelectAll(true);
       } else if (historyIndex === 0) {
         setHistoryIndex(-1);
         setInput('');

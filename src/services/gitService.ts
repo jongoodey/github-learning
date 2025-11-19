@@ -73,9 +73,7 @@ class GitService {
         await this.pfs.stat(this.dir);
         const files = await this.pfs.readdir(this.dir);
         for (const file of files) {
-          if (file !== '.git') {
-            await this.removeRecursive(`${this.dir}/${file}`);
-          }
+          await this.removeRecursive(`${this.dir}/${file}`);
         }
       } catch (e: any) {
         // Directory doesn't exist, that's fine - we'll create it in init()

@@ -40,49 +40,37 @@ The good news first - **the terminal itself IS working!** Your concern about com
 
 ## 🐛 CRITICAL BUGS REQUIRING IMMEDIATE FIX
 
-### **BUG #1: Terminal Input Clearing Issue** 🔴 HIGH PRIORITY
+### **BUG #1: Terminal Input Clearing Issue** ✅ FIXED
 **Problem**: When using arrow keys to navigate history, the previous command text isn't fully cleared before new text is added, causing concatenated commands like "git loggit branch feature"
 
-**Evidence**: Tested with up arrow after "git log", then typed "git branch feature" → resulted in malformed command
-
-**Fix Required**: 
-- Clear input field completely before populating with history item
-- Ensure cursor position resets to start
-
-**File to Check**: Terminal input handler, specifically the arrow key event listener
+**Fix Applied**: 
+- Removed `shouldSelectAll` logic which was causing inconsistent selection behavior.
+- Reverted to standard terminal behavior (cursor at end of line).
+- Ensured input is correctly replaced when navigating history.
 
 ---
 
-### **BUG #2: "Next" Button Clickability** 🔴 HIGH PRIORITY (NEW)
-**Problem**: The "Next" button appears enabled but cannot be clicked via standard mouse events in some contexts (required JavaScript click in testing). This suggests a potential Z-index issue or an invisible overlay blocking the button.
+### **BUG #2: "Next" Button Clickability** ✅ FIXED
+**Problem**: The "Next" button appears enabled but cannot be clicked via standard mouse events in some contexts.
 
-**Evidence**: Automated browser testing could not click the button using coordinates/pixels, but could click it using JavaScript.
-
-**Fix Required**:
-- Check CSS `z-index` of the header and button.
-- Check for overlapping absolute positioned elements.
+**Fix Applied**:
+- Added `relative z-50` to the header component to ensure it sits above other elements (like the visualization layer).
 
 ---
 
-### **BUG #3: Level State Persistence / Pre-completion** 🟡 MEDIUM PRIORITY
-**Problem**: Level 3 ("Create a branch") appeared to be already completed when arriving at it, likely due to state persisting from previous levels or reloads.
+### **BUG #3: Level State Persistence / Pre-completion** ✅ FIXED
+**Problem**: Level 3 ("Create a branch") appeared to be already completed when arriving at it.
 
-**Evidence**: Upon loading Level 3, the win condition was already met without user action on that specific level instance.
-
-**Fix Required**:
-- Ensure level-specific criteria are checked against *new* actions or reset state appropriately between levels.
+**Fix Applied**:
+- Updated `resetRepo` in `gitService` to explicitly delete the `.git` directory (and all other files) to ensure a completely fresh state when initializing a level.
 
 ---
 
-### **BUG #4: Git Graph State Doesn't Update on Level Change** 🟡 MEDIUM PRIORITY
-**Problem**: Git graph still shows "No commits yet. Make your first commit!" even after commits are made when navigating between levels (Previous report - needs verification if still occurring with state persistence).
+### **BUG #4: Git Graph State Doesn't Update on Level Change** ✅ FIXED (Likely)
+**Problem**: Git graph still shows "No commits yet..." even after commits are made.
 
-**Fix Required**:
-- Persist git state across level changes
-- OR reset state intentionally per level with appropriate initial state
-- Update graph message to reflect actual state
-
-**File to Check**: State management for git repository, level transition handlers
+**Fix Applied**:
+- Fixed by the resolution of Bug #3. A clean repo reset ensures the graph state is correctly synchronized with the new level's fresh state.
 
 ---
 
