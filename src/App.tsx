@@ -139,7 +139,7 @@ function App() {
                 {level.cli && (
                   <div className="bg-gray-900/50 rounded-lg p-4 border-l-4 border-blue-500">
                     <p className="text-gray-400 text-sm whitespace-pre-line">{level.cli}</p>
-      </div>
+                  </div>
                 )}
               </>
             )}

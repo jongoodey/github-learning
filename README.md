@@ -153,7 +153,9 @@ The `dist/` directory will contain your production build.
 - **GitHub Pages**: Use the `gh-pages` npm package
 - **Cloudflare Pages**: Connect your repository
 
-## 🐛 Known Issues & Future Enhancements
+## 🐛 Troubleshooting & Known Issues
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions, particularly regarding startup errors and polyfills.
 
 ### Current Issues
 - [ ] File system initialization needs improvement
@@ -198,4 +200,3 @@ Created by [@jongoodey](https://github.com/jongoodey)
 **Happy Git Learning! 🚀**
 
 Start your journey to Git mastery today - no installations required!
-
