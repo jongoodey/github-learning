@@ -1,6 +1,6 @@
 import git from 'isomorphic-git';
 import FS from '@isomorphic-git/lightning-fs';
-import { GitCommit, GitRef, FileTreeNode } from '../types';
+import type { GitCommit, GitRef, FileTreeNode } from '../types';
 
 class GitService {
   private fs: FS;

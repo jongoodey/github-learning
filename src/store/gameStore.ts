@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { GitCommit, GitRef, FileTreeNode, Level } from '../types';
+import type { GitCommit, GitRef, FileTreeNode, Level } from '../types';
 import gitService from '../services/gitService';
 import { levels } from '../data/levels';
 

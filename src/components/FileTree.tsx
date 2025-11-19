@@ -1,4 +1,4 @@
-import { FileTreeNode } from '../types';
+import type { FileTreeNode } from '../types';
 import { File, Folder, FolderOpen } from 'lucide-react';
 import { useState } from 'react';
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { GitCommit, GitRef } from '../types';
+import type { GitCommit, GitRef } from '../types';
 
 interface GitGraphProps {
   commits: GitCommit[];
