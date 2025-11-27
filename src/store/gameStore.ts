@@ -193,6 +193,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
     }
 
+    // Check if a specific branch has been merged
+    if (condition.startsWith('merged:')) {
+      const branchToMerge = condition.split(':')[1];
+      try {
+        return await gitService.hasMerged(branchToMerge);
+      } catch {
+        return false;
+      }
+    }
+
     return false;
   },
 }));

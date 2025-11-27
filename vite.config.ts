@@ -18,7 +18,7 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
     alias: {
       path: 'path-browserify',
-      buffer: 'buffer',
+      buffer: 'buffer/',
       stream: 'stream-browserify',
       util: 'util',
     },

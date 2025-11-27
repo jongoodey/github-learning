@@ -102,7 +102,7 @@ Switch to main and merge the feature branch into it.`,
       'git add feature.txt',
       'git commit -m "Feature commit"',
     ],
-    winCondition: 'hasCommits:3',
+    winCondition: 'merged:feature',
     cards: ['checkout', 'merge', 'branch', 'status', 'log'],
   },
   {

@@ -1,4 +1,4 @@
-import * as buffer from 'buffer';
+import { Buffer } from 'buffer/';
 
 // Polyfill Node.js globals for the browser
 // Required by isomorphic-git and other node-compatible libraries
@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
     // @ts-ignore
     window.global = window;
     // @ts-ignore
-    window.Buffer = buffer.Buffer || buffer;
+    window.Buffer = Buffer;
     // @ts-ignore
     window.process = {
       env: { DEBUG: undefined },

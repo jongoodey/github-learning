@@ -22,6 +22,7 @@ class GitService {
   private stashStack: StashEntry[] = [];
   private remotes: Map<string, SimulatedRemote> = new Map();
   private currentDirectory: string = '/repo';
+  private mergedBranches: Set<string> = new Set();
 
   constructor() {
     this.fs = new FS('git-learning-game');
@@ -66,6 +67,10 @@ class GitService {
   }
 
   async resetRepo(): Promise<void> {
+    // Clear tracking state
+    this.clearMergedBranches();
+    this.stashStack = [];
+    
     // Clear the file system
     try {
       // Check if directory exists before trying to read it
@@ -428,6 +433,9 @@ class GitService {
         },
       });
 
+      // Track that this branch has been merged
+      this.mergedBranches.add(branch);
+
       return `Merge made by the 'recursive' strategy.`;
     } catch (error: any) {
       if (error.code === 'MergeNotSupportedError') {
@@ -435,6 +443,16 @@ class GitService {
       }
       return `Error: ${error.message}`;
     }
+  }
+
+  // Check if a branch has been merged
+  async hasMerged(branch: string): Promise<boolean> {
+    return this.mergedBranches.has(branch);
+  }
+
+  // Clear merged branches tracking (called on reset)
+  clearMergedBranches(): void {
+    this.mergedBranches.clear();
   }
 
   // ============ REMOTE OPERATIONS ============
